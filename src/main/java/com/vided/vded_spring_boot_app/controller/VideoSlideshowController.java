@@ -1,6 +1,8 @@
 package com.vided.vded_spring_boot_app.controller;
 
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
+import com.vided.vded_spring_boot_app.service.ImageProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -13,6 +15,8 @@ import java.util.List;
 @RequestMapping("/videoslideshow")
 @CrossOrigin("http://localhost:5173/")
 public class VideoSlideshowController {
+    @Autowired
+    private ImageProcessor imageProcessor;
 
     private static final Logger logger = LoggerFactory.getLogger(VideoSlideshowController.class);
 
@@ -34,7 +38,7 @@ public class VideoSlideshowController {
         }
 
         var videoSlideshowRequest = new VideoSlideshowRequest(duration, effect, music, images);
-
+        imageProcessor.createVideo(videoSlideshowRequest);
         return "Video request processed successfully";
     }
 }
