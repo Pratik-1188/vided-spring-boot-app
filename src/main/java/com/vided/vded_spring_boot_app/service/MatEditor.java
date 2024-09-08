@@ -1,15 +1,11 @@
 package com.vided.vded_spring_boot_app.service;
 
-
-import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Scalar;
 import org.bytedeco.opencv.opencv_core.Size;
 import org.opencv.core.CvType;
 import org.springframework.stereotype.Service;
-import org.bytedeco.opencv.global.opencv_core;
-import org.bytedeco.opencv.opencv_core.Scalar;
 
 @Service
 public class MatEditor {
