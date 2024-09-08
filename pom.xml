@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.vided</groupId>
-	<artifactId>vded-spring-boot-app</artifactId>
+	<artifactId>vided-spring-boot-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>vded-spring-boot-app</name>
 	<description>Demo project for Spring Boot</description>
