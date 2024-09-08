@@ -35,6 +35,6 @@ public class VideoSlideshowRequest {
 
         // hardcoding for the time being **
         this.orientation = "Portrait";
-        this.videoSize = new Size(720, 1280);
+        this.videoSize = new Size(1080, 1920);
     }
 }

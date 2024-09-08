@@ -2,6 +2,7 @@ package com.vided.vded_spring_boot_app.service;
 
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.Rect;
 import org.bytedeco.opencv.opencv_core.Scalar;
 import org.bytedeco.opencv.opencv_core.Size;
 import org.opencv.core.CvType;
@@ -51,6 +52,34 @@ public class MatEditor {
         alphaMat.copyTo(roi);
 
         return paddedMat;
+    }
+
+    public Mat zoom(Mat mat, double zoomFactor){
+        if(zoomFactor == 1){
+            return mat;
+        }
+
+        Size originalMatSize = new Size(mat.cols(), mat.rows());
+
+        int newWidth = (int) (mat.cols() * zoomFactor);
+        int newHeight = (int) (mat.rows() * zoomFactor);
+
+        Mat zoomedMat = new Mat();
+        opencv_imgproc.resize(mat, zoomedMat, new Size(newWidth, newHeight));
+        return cropCenter(zoomedMat, originalMatSize);
+    }
+
+    public Mat cropCenter(Mat mat, Size originalSize) {
+        // Calculate the coordinates to center the cropped region
+        int x = Math.max((mat.cols() - originalSize.width()) / 2, 0);
+        int y = Math.max((mat.rows() - originalSize.height()) / 2, 0);
+
+        // Ensure cropping region is within bounds
+        int cropWidth = Math.min(originalSize.width(), mat.cols());
+        int cropHeight = Math.min(originalSize.height(), mat.rows());
+
+        Rect roi = new Rect(x, y, cropWidth, cropHeight);
+        return new Mat(mat, roi).clone();
     }
 
 
