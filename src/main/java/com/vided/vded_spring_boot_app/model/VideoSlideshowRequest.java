@@ -23,7 +23,7 @@ public class VideoSlideshowRequest {
     public VideoSlideshowRequest(int duration, String effect, String music, List<MultipartFile> images) throws IOException {
         this.duration = duration;
         this.effect = effect;
-        this.music = music;
+        this.music = "Lukrembo  Marshmallow" ;
         this.images = new ArrayList<>();  // Initialize the List
 
         // Convert MultipartFile images to Mat objects

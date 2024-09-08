@@ -5,6 +5,7 @@ import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
 
 
 import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Mat;
 
@@ -28,7 +29,7 @@ public class VideoSlideshowService {
     @Autowired
     private OutputPath outputPath;
 
-    public ResponseEntity<String> createSlideshow(VideoSlideshowRequest videoSlideshowRequest) throws FFmpegFrameRecorder.Exception {
+    public ResponseEntity<String> createSlideshow(VideoSlideshowRequest videoSlideshowRequest) throws FFmpegFrameRecorder.Exception, FrameGrabber.Exception {
 
     
         // Scaling and Padding
@@ -38,12 +39,11 @@ public class VideoSlideshowService {
             // Scale the mat to fit video size
             mat = matEditor.scaleToFit(mat, videoSlideshowRequest.getOrientation(), videoSlideshowRequest.getVideoSize());
 
-            // Add alpha channel if needed
+//            // Add alpha channel if needed
 //            if (mat.channels() < 4) {
 //                opencv_imgproc.cvtColor(mat, mat, opencv_imgproc.COLOR_BGR2BGRA);  // Modify in-place
 //            }
-
-            // Add transparent padding
+////             Add transparent padding
 //            mat = matEditor.addTransparentPadding(mat, videoSlideshowRequest.getVideoSize());
 
             // Replace the original mat with the padded one
