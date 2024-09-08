@@ -9,6 +9,13 @@
 | **9:16**         | N/A                        | 720 x 1280 (720p)          |
 
 
+> Save mat
 ```java
-opencv_imgcodecs.imwrite("one.jpeg", videoSlideshowRequest.getImages().getFirst());
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import org.bytedeco.opencv.global.opencv_imgcodecs;
+
+Path outputDirectory = Paths.get(outputPath.getVideoSlideshow().toUri()).toAbsolutePath();
+opencv_imgcodecs.imwrite(outputDirectory.resolve(String.format("one_%d.jpeg", i)).toString(), videoSlideshowRequest.getImages().get(i));
+System.out.println(outputDirectory.resolve(String.format("one_%d.jpeg", i)));
 ```

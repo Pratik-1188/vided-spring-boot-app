@@ -3,7 +3,7 @@ package com.vided.vded_spring_boot_app.service;
 import com.vided.vded_spring_boot_app.config.OutputPath;
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
 
-import org.bytedeco.opencv.global.opencv_imgcodecs;
+
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Mat;
 
@@ -12,8 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 
 @Service
 public class VideoSlideshowService {
@@ -44,9 +43,7 @@ public class VideoSlideshowService {
             videoSlideshowRequest.getImages().set(i, mat);
 
 
-//            Path outputDirectory = Paths.get(outputPath.getVideoSlideshow().toUri()).toAbsolutePath();
-//            opencv_imgcodecs.imwrite(outputDirectory.resolve(String.format("one_%d.jpeg", i)).toString(), videoSlideshowRequest.getImages().get(i));
-//            System.out.println(outputDirectory.resolve(String.format("one_%d.jpeg", i)));
+
         }
 
 
