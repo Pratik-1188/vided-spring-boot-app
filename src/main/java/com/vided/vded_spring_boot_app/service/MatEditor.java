@@ -22,9 +22,19 @@ public class MatEditor {
         if(orientation.equals("Portrait")){
             newWidth = targetSize.width();
             newHeight = (int) (newWidth / currentAspectRatio);
+
+            if(newHeight > targetSize.height()){
+                newHeight = targetSize.height();
+                newWidth = (int) (newHeight * currentAspectRatio);
+            }
         }else{
             newHeight = targetSize.height();
             newWidth = (int) (newHeight * currentAspectRatio);
+
+            if(newWidth > targetSize.width()){
+                newWidth = targetSize.width();
+                newHeight = (int) (newWidth / currentAspectRatio);
+            }
         }
 
         Mat result = new Mat();
