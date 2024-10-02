@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.OutputStream;
 
 
 @Service
@@ -29,7 +30,7 @@ public class VideoSlideshowService {
     @Autowired
     private OutputPath outputPath;
 
-    public ResponseEntity<String> createSlideshow(VideoSlideshowRequest videoSlideshowRequest) throws FFmpegFrameRecorder.Exception, FrameGrabber.Exception {
+    public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest) throws Exception {
 
     
         // Scaling and Padding

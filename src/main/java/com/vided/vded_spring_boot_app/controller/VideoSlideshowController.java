@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import org.slf4j.Logger;
+
+import java.io.OutputStream;
 import java.util.List;
 
 @RestController
@@ -20,11 +22,11 @@ public class VideoSlideshowController {
     private static final Logger logger = LoggerFactory.getLogger(VideoSlideshowController.class);
 
     @PostMapping
-    public ResponseEntity<String> handelVideoSlideshowRequest(
+    public ResponseEntity<byte[]> handelVideoSlideshowRequest(
             @RequestParam("duration") int duration,
             @RequestParam("effect") String effect,
             @RequestParam("music") String music,
-            @RequestParam("images") List<MultipartFile> images) throws IOException {
+            @RequestParam("images") List<MultipartFile> images) throws Exception {
 
         // Log the request parameters
         logger.info("Duration: " + duration);

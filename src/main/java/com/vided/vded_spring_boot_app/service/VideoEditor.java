@@ -12,8 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 public class VideoEditor {
@@ -26,10 +30,17 @@ public class VideoEditor {
     @Autowired
     ResoursePath resoursePath;
 
-    public ResponseEntity<String> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws FFmpegFrameRecorder.Exception, FrameGrabber.Exception {
-        Path outputDirectory = Paths.get(outputPath.getVideoSlideshow().toUri()).toAbsolutePath();
+    public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws Exception {
+
+        String uniqueFileName = "slideshow_" + UUID.randomUUID() + ".mp4";
+        File tempFile = new File(System.getProperty("java.io.tmpdir"), uniqueFileName);
+        if (!tempFile.createNewFile()) {
+            throw new IOException("Failed to create unique temporary file: " + tempFile.getAbsolutePath());
+        }
+        tempFile.deleteOnExit();
+
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
-                outputDirectory.resolve("output.mp4").toString(),
+                tempFile.getAbsolutePath(),
                 videoSlideshowRequest.getVideoSize().width(),
                 videoSlideshowRequest.getVideoSize().height()
         );
@@ -47,6 +58,7 @@ public class VideoEditor {
         recorder.setAudioBitrate(192 * 1000);
 
         recorder.start();
+
         for(Mat mat: videoSlideshowRequest.getImages()){
             double zoomFactor = 1.000;
             for (int i = 0; i < videoSlideshowRequest.getDuration() * fps; i++) {
@@ -80,6 +92,11 @@ public class VideoEditor {
 
         recorder.stop();
         recorder.release();
-        return  new ResponseEntity<>(outputDirectory.resolve("output.mp4").toString(), HttpStatus.CREATED);
+
+        // Read the temporary file into a byte array
+        byte[] videoData = Files.readAllBytes(tempFile.toPath());
+
+        // Return the video data as a response
+        return new ResponseEntity<>(videoData, HttpStatus.CREATED);
     }
 }
