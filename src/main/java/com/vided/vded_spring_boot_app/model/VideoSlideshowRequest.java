@@ -21,7 +21,7 @@ public class VideoSlideshowRequest {
 
     // Constructor
     public VideoSlideshowRequest(int duration, String effect, String music, List<MultipartFile> images) throws IOException {
-        this.duration = duration;
+        this.duration = 3;
         this.effect = effect;
         this.music = "Lukrembo  Marshmallow" ;
         this.images = new ArrayList<>();  // Initialize the List
