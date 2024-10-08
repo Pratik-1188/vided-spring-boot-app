@@ -61,14 +61,17 @@ public class VideoEditor {
 
         for(Mat mat: videoSlideshowRequest.getImages()){
             double zoomFactor = 1.000;
-            for (int i = 0; i < videoSlideshowRequest.getDuration() * fps; i++) {
+            for (int i = 0; i < videoSlideshowRequest.getDuration() * (fps/2); i++) {
 
                 Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
 
                 OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
                 Frame frame = converter.convert(zoomedMat);
+
                 recorder.record(frame);
-                zoomFactor += 0.001;
+                recorder.record(frame);
+
+                zoomFactor += 0.0015;
             }
             zoomFactor = 1.000;
         }
@@ -81,7 +84,7 @@ public class VideoEditor {
         double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
         while ((audioFrame = audioGrabber.grabFrame()) != null) {
             if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
-                break; // Stop reading audio after reaching the target time
+                break;
             }
             recorder.recordSamples(audioFrame.samples);
         }

@@ -25,7 +25,7 @@ public class VideoSlideshowRequest {
     private Size videoSize;
 
     public VideoSlideshowRequest(int duration, String effect, String music, List<MultipartFile> images, ResourcePath resourcePath) throws IOException {
-        this.duration = 3;
+        this.duration = 4;
         this.effect = effect;
         this.music = getRandomBgMusic(resourcePath);
         this.images = new ArrayList<>();  // Initialize the List
