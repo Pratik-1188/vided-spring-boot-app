@@ -1,5 +1,6 @@
 package com.vided.vded_spring_boot_app.controller;
 
+import com.vided.vded_spring_boot_app.config.ResourcePath;
 import com.vided.vded_spring_boot_app.service.VideoSlideshowService;
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,10 @@ import java.util.List;
 public class VideoSlideshowController {
     @Autowired
     private VideoSlideshowService videoSlideshowService;
+
+    @Autowired
+    ResourcePath resourcePath;
+
     private static final Logger logger = LoggerFactory.getLogger(VideoSlideshowController.class);
 
     @PostMapping
@@ -29,16 +34,16 @@ public class VideoSlideshowController {
             @RequestParam("images") List<MultipartFile> images) throws Exception {
 
         // Log the request parameters
-        logger.info("Duration: " + duration);
-        logger.info("Effect: " + effect);
-        logger.info("Music: " + music);
-        logger.info("Number of images: " + images.size());
-        for (MultipartFile image : images) {
-            logger.info("Image name: " + image.getOriginalFilename());
-            logger.info("Image size: " + image.getSize());
-        }
+//        logger.info("Duration: " + duration);
+//        logger.info("Effect: " + effect);
+//        logger.info("Music: " + music);
+//        logger.info("Number of images: " + images.size());
+//        for (MultipartFile image : images) {
+//            logger.info("Image name: " + image.getOriginalFilename());
+//            logger.info("Image size: " + image.getSize());
+//        }
 
-        var videoSlideshowRequest = new VideoSlideshowRequest(duration, effect, music, images);
+        var videoSlideshowRequest = new VideoSlideshowRequest(duration, effect, music, images, resourcePath);
         return videoSlideshowService.createSlideshow(videoSlideshowRequest);
 
     }

@@ -9,6 +9,6 @@ import java.nio.file.Path;
 @Component
 @ConfigurationProperties(prefix = "vided.resource")
 @Data
-public class ResoursePath {
+public class ResourcePath {
     private Path bgMusic;
 }

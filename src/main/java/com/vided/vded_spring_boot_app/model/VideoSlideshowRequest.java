@@ -1,29 +1,33 @@
 package com.vided.vded_spring_boot_app.model;
 
+import com.vided.vded_spring_boot_app.config.ResourcePath;
 import lombok.Data;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Size;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Data
 public class VideoSlideshowRequest {
     private int duration;
     private String effect;
     private String music;
-    private List<Mat> images;  // Store the images as Mat objects
+    private List<Mat> images;
     private String orientation;
     private Size videoSize;
 
-    // Constructor
-    public VideoSlideshowRequest(int duration, String effect, String music, List<MultipartFile> images) throws IOException {
+    public VideoSlideshowRequest(int duration, String effect, String music, List<MultipartFile> images, ResourcePath resourcePath) throws IOException {
         this.duration = 3;
         this.effect = effect;
-        this.music = "Lukrembo  Marshmallow" ;
+        this.music = getRandomBgMusic(resourcePath);
         this.images = new ArrayList<>();  // Initialize the List
 
         // Convert MultipartFile images to Mat objects
@@ -32,9 +36,36 @@ public class VideoSlideshowRequest {
             Mat mat = opencv_imgcodecs.imdecode(new Mat(bytes), opencv_imgcodecs.IMREAD_UNCHANGED);
             this.images.add(mat);  // Add each Mat object to the list
         }
-
-        // hardcoding for the time being **
         this.orientation = "Portrait";
         this.videoSize = new Size(1080, 1920);
+    }
+
+    public String getRandomBgMusic(ResourcePath resourcePath) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath())) {
+            Random random = new Random();
+            Path selectedFile = null;
+            int count = 0;
+
+            for (Path path : stream) {
+                count++;
+                if (random.nextInt(count) == 0) {
+                    selectedFile = path;
+                }
+            }
+
+            if (selectedFile != null) {
+                String fileName = selectedFile.getFileName().toString();
+                return fileName.contains(".")
+                        ? fileName.substring(0, fileName.lastIndexOf('.'))
+                        : fileName;
+            } else {
+                System.out.println("No files found in the directory.");
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }

@@ -1,7 +1,7 @@
 package com.vided.vded_spring_boot_app.service;
 
 import com.vided.vded_spring_boot_app.config.OutputPath;
-import com.vided.vded_spring_boot_app.config.ResoursePath;
+import com.vided.vded_spring_boot_app.config.ResourcePath;
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;
@@ -28,7 +28,7 @@ public class VideoEditor {
     OutputPath outputPath;
 
     @Autowired
-    ResoursePath resoursePath;
+    ResourcePath resourcePath;
 
     public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws Exception {
 
@@ -73,7 +73,7 @@ public class VideoEditor {
             zoomFactor = 1.000;
         }
 
-        Path bgMusicRoot = Paths.get(resoursePath.getBgMusic().toUri()).toAbsolutePath();
+        Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
         FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
         audioGrabber.start();
 
