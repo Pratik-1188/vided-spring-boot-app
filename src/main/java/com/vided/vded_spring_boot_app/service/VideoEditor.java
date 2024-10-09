@@ -56,37 +56,64 @@ public class VideoEditor {
         recorder.setAudioBitrate(192 * 1000);
 
 
+        Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
+        FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
+        double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
+
         recorder.start();
+        audioGrabber.start();
 
-        for(Mat mat: videoSlideshowRequest.getImages()){
+        long videoTimestamp = 0;
+        long audioTimestamp = audioGrabber.getTimestamp(); // Initial audio timestamp
+
+        for (Mat mat : videoSlideshowRequest.getImages()) {
             double zoomFactor = 1.000;
-            for (int i = 0; i < videoSlideshowRequest.getDuration() * (fps/2); i++) {
 
+            // Loop through frames for each image
+            for (int i = 0; i < videoSlideshowRequest.getDuration() * (fps / 2); i++) {
+
+                // Apply zoom effect to the image
                 Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
 
+                // Convert zoomed Mat to Frame and record video frame
                 OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
                 Frame frame = converter.convert(zoomedMat);
-
+                recorder.setTimestamp(videoTimestamp); // Set video timestamp
                 recorder.record(frame);
-                recorder.record(frame);
+                recorder.record(frame); // Duplicate for smoother effect
 
+                // Update video timestamp by frame duration (in microseconds)
+                videoTimestamp += (2_000_000 / fps);
+
+                // Synchronize audio with video
+                while (audioTimestamp < videoTimestamp) {
+                    Frame audioFrame = audioGrabber.grabFrame();
+                    if (audioFrame != null && audioFrame.samples != null) {
+                        recorder.recordSamples(audioFrame.samples);
+                        audioTimestamp = audioGrabber.getTimestamp(); // Update audio timestamp
+                    } else {
+                        break; // No more audio frames
+                    }
+                }
+
+                // Increment zoom for each frame
                 zoomFactor += 0.0015;
             }
+
+            // Reset zoom for the next image
             zoomFactor = 1.000;
         }
 
-        Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
-        FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
-        audioGrabber.start();
 
-        Frame audioFrame;
-        double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
-        while ((audioFrame = audioGrabber.grabFrame()) != null) {
-            if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
-                break;
-            }
-            recorder.recordSamples(audioFrame.samples);
-        }
+
+
+
+//        while ((audioFrame = audioGrabber.grabFrame()) != null) {
+//            if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
+//                break;
+//            }
+//            recorder.recordSamples(audioFrame.samples);
+//        }
 
         audioGrabber.stop();
         audioGrabber.release();
