@@ -58,7 +58,6 @@ public class VideoEditor {
 
         Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
         FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
-        double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
 
         recorder.start();
         audioGrabber.start();
@@ -79,6 +78,7 @@ public class VideoEditor {
                 OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
                 Frame frame = converter.convert(zoomedMat);
                 recorder.setTimestamp(videoTimestamp); // Set video timestamp
+
                 recorder.record(frame);
                 recorder.record(frame); // Duplicate for smoother effect
 
@@ -92,40 +92,22 @@ public class VideoEditor {
                         recorder.recordSamples(audioFrame.samples);
                         audioTimestamp = audioGrabber.getTimestamp(); // Update audio timestamp
                     } else {
-                        break; // No more audio frames
+                        break;
                     }
                 }
-
-                // Increment zoom for each frame
                 zoomFactor += 0.0015;
             }
-
-            // Reset zoom for the next image
             zoomFactor = 1.000;
         }
-
-
-
-
-
-//        while ((audioFrame = audioGrabber.grabFrame()) != null) {
-//            if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
-//                break;
-//            }
-//            recorder.recordSamples(audioFrame.samples);
-//        }
 
         audioGrabber.stop();
         audioGrabber.release();
 
-
         recorder.stop();
         recorder.release();
 
-        // Read the temporary file into a byte array
         byte[] videoData = outputStream.toByteArray();
 
-        // Return the video data as a response
         return new ResponseEntity<>(videoData, HttpStatus.CREATED);
     }
 }
