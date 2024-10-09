@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,30 +34,27 @@ public class VideoEditor {
 
     public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws Exception {
 
-        String uniqueFileName = "slideshow_" + UUID.randomUUID() + ".mp4";
-        File tempFile = new File(System.getProperty("java.io.tmpdir"), uniqueFileName);
-        if (!tempFile.createNewFile()) {
-            throw new IOException("Failed to create unique temporary file: " + tempFile.getAbsolutePath());
-        }
-        tempFile.deleteOnExit();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
-                tempFile.getAbsolutePath(),
+                outputStream,
                 videoSlideshowRequest.getVideoSize().width(),
                 videoSlideshowRequest.getVideoSize().height()
         );
 
-        recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
-        recorder.setFormat("mp4");
+        // Set up video properties
+        recorder.setVideoCodec(avcodec.AV_CODEC_ID_VP8);
+        recorder.setFormat("webm");
+        recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
         recorder.setFrameRate(fps);
         recorder.setVideoBitrate(3000 * 1000);
-        recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
 
-        // Set audio properties
-        recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC);
-        recorder.setAudioChannels(2); // Stereo sound
+        // Set up audio properties
+        recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
+        recorder.setAudioChannels(2);
         recorder.setSampleRate(44100);
         recorder.setAudioBitrate(192 * 1000);
+
 
         recorder.start();
 
@@ -97,7 +96,7 @@ public class VideoEditor {
         recorder.release();
 
         // Read the temporary file into a byte array
-        byte[] videoData = Files.readAllBytes(tempFile.toPath());
+        byte[] videoData = outputStream.toByteArray();
 
         // Return the video data as a response
         return new ResponseEntity<>(videoData, HttpStatus.CREATED);
