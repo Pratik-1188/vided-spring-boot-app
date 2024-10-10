@@ -77,7 +77,6 @@ public class VideoEditor {
                         recorder.record(frame);
                         zoomFactor += 0.0015;
                     }
-                    zoomFactor = 1.000;
                 }
             }
             catch (Exception e){
@@ -93,11 +92,11 @@ public class VideoEditor {
 
                 Frame audioFrame;
                 double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
-                while ((audioFrame = audioGrabber.grabFrame()) != null) {
+                while ((audioFrame = audioGrabber.grabSamples()) != null) {
                     if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
                         break;
                     }
-                    recorder.recordSamples(audioFrame.samples);
+                    recorder.record(audioFrame);
                 }
                 audioGrabber.stop();
                 audioGrabber.release();
