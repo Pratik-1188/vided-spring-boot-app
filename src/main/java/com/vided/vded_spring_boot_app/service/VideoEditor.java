@@ -11,17 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Service
 public class VideoEditor {
@@ -56,7 +48,6 @@ public class VideoEditor {
         recorder.setAudioChannels(2);
         recorder.setSampleRate(44100);
         recorder.setAudioBitrate(192 * 1000);
-
 
         recorder.start();
 
@@ -100,11 +91,8 @@ public class VideoEditor {
         recorder.stop();
         recorder.release();
 
-
-        // Read the temporary file into a byte array
         byte[] videoData = outputStream.toByteArray();
 
-        // Return the video data as a response
         return new ResponseEntity<>(videoData, HttpStatus.CREATED);
     }
 }
