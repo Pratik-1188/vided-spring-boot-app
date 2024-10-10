@@ -60,59 +60,46 @@ public class VideoEditor {
 
         recorder.start();
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            // Process video frames
+            int numLoops = videoSlideshowRequest.getDuration() * (fps / 2);
+            OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
+            Frame frame;
 
-        executor.submit(() -> {
-            try{
-                int numLoops = videoSlideshowRequest.getDuration() * (fps/2);
-                OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
-                Frame frame;
-
-                for(Mat mat: videoSlideshowRequest.getImages()){
-                    double zoomFactor = 1.000;
-                    for (int i = 0; i < numLoops; i++) {
-                        Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
-                        frame = converter.convert(zoomedMat);
-                        recorder.record(frame);
-                        recorder.record(frame);
-                        zoomFactor += 0.0015;
-                    }
+            for (Mat mat : videoSlideshowRequest.getImages()) {
+                double zoomFactor = 1.000;
+                for (int i = 0; i < numLoops; i++) {
+                    Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
+                    frame = converter.convert(zoomedMat);
+                    recorder.record(frame);
+                    recorder.record(frame);
+                    zoomFactor += 0.0015;
                 }
             }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-        });
 
-        executor.submit(() ->{
-            try{
-                Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
-                FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
-                audioGrabber.start();
+            // Process audio after all video frames are recorded
+            Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
+            FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
+            double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
 
-                Frame audioFrame;
-                double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
-                while ((audioFrame = audioGrabber.grabSamples()) != null) {
-                    if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
-                        break;
-                    }
-                    recorder.record(audioFrame);
+            audioGrabber.start();
+            Frame audioFrame;
+            while ((audioFrame = audioGrabber.grabSamples()) != null) {
+                if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
+                    break;
                 }
-                audioGrabber.stop();
-                audioGrabber.release();
-            }catch (Exception e){
-                e.printStackTrace();
+                recorder.record(audioFrame);
             }
-        });
+            audioGrabber.stop();
+            audioGrabber.release();
 
-        // Shutdown executor after processing
-        executor.shutdown();
-        while (!executor.isTerminated()) {
-            // Wait for both threads to complete
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         recorder.stop();
         recorder.release();
+
 
         // Read the temporary file into a byte array
         byte[] videoData = outputStream.toByteArray();
