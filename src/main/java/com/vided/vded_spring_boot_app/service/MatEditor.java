@@ -59,29 +59,19 @@ public class MatEditor {
             return mat;
         }
 
-        Size originalMatSize = new Size(mat.cols(), mat.rows());
-
+        // calculate new size
         int newWidth = (int) (mat.cols() * zoomFactor);
         int newHeight = (int) (mat.rows() * zoomFactor);
 
+        // scale up the image
         Mat zoomedMat = new Mat();
         opencv_imgproc.resize(mat, zoomedMat, new Size(newWidth, newHeight));
-        return cropCenter(zoomedMat, originalMatSize);
+
+        // crop original size from center of image to give zooming effect
+        int x = (newWidth - mat.cols()) / 2;
+        int y = (newHeight - mat.rows()) / 2;
+        Rect roi = new Rect(x, y, mat.cols(), mat.rows());
+
+        return new Mat(zoomedMat, roi);
     }
-
-    public Mat cropCenter(Mat mat, Size originalSize) {
-        // Calculate the coordinates to center the cropped region
-        int x = Math.max((mat.cols() - originalSize.width()) / 2, 0);
-        int y = Math.max((mat.rows() - originalSize.height()) / 2, 0);
-
-        // Ensure cropping region is within bounds
-        int cropWidth = Math.min(originalSize.width(), mat.cols());
-        int cropHeight = Math.min(originalSize.height(), mat.rows());
-
-        Rect roi = new Rect(x, y, cropWidth, cropHeight);
-        return new Mat(mat, roi).clone();
-    }
-
-
-
 }
