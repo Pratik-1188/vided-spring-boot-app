@@ -54,6 +54,7 @@ public class MatEditor {
         return paddedMat;
     }
 
+
     public Mat zoom(Mat mat, double zoomFactor){
         if(zoomFactor == 1){
             return mat;
@@ -63,15 +64,32 @@ public class MatEditor {
         int newWidth = (int) (mat.cols() * zoomFactor);
         int newHeight = (int) (mat.rows() * zoomFactor);
 
-        // scale up the image
-        Mat zoomedMat = new Mat();
-        opencv_imgproc.resize(mat, zoomedMat, new Size(newWidth, newHeight));
+        int x = (mat.cols() - newWidth) / 2;
+        int y = (mat.rows() - newHeight) / 2;
+        Rect roi = new Rect(x, y, newWidth, newHeight);
 
-        // crop original size from center of image to give zooming effect
-        int x = (newWidth - mat.cols()) / 2;
-        int y = (newHeight - mat.rows()) / 2;
-        Rect roi = new Rect(x, y, mat.cols(), mat.rows());
-
-        return new Mat(zoomedMat, roi);
+        return new Mat(mat, roi);
     }
+
+//    OLD ZOOMING LOGIC
+//    public Mat zoom(Mat mat, double zoomFactor){
+//        if(zoomFactor == 1){
+//            return mat;
+//        }
+//
+//        // calculate new size
+//        int newWidth = (int) (mat.cols() * zoomFactor);
+//        int newHeight = (int) (mat.rows() * zoomFactor);
+//
+//        // scale up the image
+//        Mat zoomedMat = new Mat();
+//        opencv_imgproc.resize(mat, zoomedMat, new Size(newWidth, newHeight));
+//
+//        // crop original size from center of image to give zooming effect
+//        int x = (newWidth - mat.cols()) / 2;
+//        int y = (newHeight - mat.rows()) / 2;
+//        Rect roi = new Rect(x, y, mat.cols(), mat.rows());
+//
+//        return new Mat(zoomedMat, roi);
+//    }
 }

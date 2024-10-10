@@ -64,7 +64,7 @@ public class VideoEditor {
                     frame = converter.convert(zoomedMat);
                     recorder.record(frame);
                     recorder.record(frame);
-                    zoomFactor += 0.0015;
+                    zoomFactor -= 0.0015;
                 }
             }
 
