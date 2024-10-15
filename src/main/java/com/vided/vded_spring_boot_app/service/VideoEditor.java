@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @Service
 public class VideoEditor {
@@ -60,17 +61,22 @@ public class VideoEditor {
 
         try {
             // Process video frames
-            int numLoops = videoSlideshowRequest.getDuration() * (fps);
+            double totalFrames = videoSlideshowRequest.getDuration() * (fps);
+            int zoomFrames = (int) (totalFrames * ((double) 2 /3));
+            int staticFrames = (int) (totalFrames * ((double) 1 /3));
             OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
-            Frame frame;
+            Frame frame = null;
 
             for (Mat mat : videoSlideshowRequest.getImages()) {
                 double zoomFactor = 1.000;
-                for (int i = 0; i < numLoops; i++) {
+                for (int i = 0; i < zoomFrames; i++) {
                     Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
                     frame = converter.convert(zoomedMat);
                     recorder.record(frame);
                     zoomFactor -= 0.0016;
+                }
+                for (int i = 0; i < staticFrames; i++) {
+                    recorder.record(frame);
                 }
             }
 
