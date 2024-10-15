@@ -3,10 +3,13 @@ package com.vided.vded_spring_boot_app.service;
 import com.vided.vded_spring_boot_app.config.OutputPath;
 import com.vided.vded_spring_boot_app.config.ResourcePath;
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
+import lombok.extern.flogger.Flogger;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
 import org.bytedeco.opencv.opencv_core.Mat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,8 @@ public class VideoEditor {
 
     @Autowired
     ResourcePath resourcePath;
+
+    private static final Logger logger = LoggerFactory.getLogger(VideoEditor.class);
 
     public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws Exception {
 
@@ -51,6 +56,8 @@ public class VideoEditor {
 
         recorder.start();
 
+        logger.info("start video processing");
+
         try {
             // Process video frames
             int numLoops = videoSlideshowRequest.getDuration() * (fps / 2);
@@ -68,10 +75,16 @@ public class VideoEditor {
                 }
             }
 
+            logger.info("All frames collected");
+
             // Process audio after all video frames are recorded
             Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
             FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
             double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
+
+            logger.info("Grabbed Audio file from disk");
+
+            logger.info("Starting audio processing");
 
             audioGrabber.start();
             Frame audioFrame;
@@ -84,6 +97,8 @@ public class VideoEditor {
             audioGrabber.stop();
             audioGrabber.release();
 
+            logger.info("All audio samples collected");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,6 +107,8 @@ public class VideoEditor {
         recorder.release();
 
         byte[] videoData = outputStream.toByteArray();
+
+        logger.info("Returning bytes");
 
         return new ResponseEntity<>(videoData, HttpStatus.CREATED);
     }
