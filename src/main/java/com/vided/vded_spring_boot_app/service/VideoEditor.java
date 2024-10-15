@@ -56,9 +56,11 @@ public class VideoEditor {
         recorder.setVideoCodec(avcodec.AV_CODEC_ID_VP8);
         recorder.setFormat("webm");
         recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
+        recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
         recorder.setFrameRate(fps);
         recorder.setVideoBitrate(3000 * 1000);
-        recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
+
+
         recorder.setAudioChannels(2);
         recorder.setSampleRate(44100);
         recorder.setAudioBitrate(192 * 1000);
@@ -69,30 +71,31 @@ public class VideoEditor {
 
     private void processFrames(VideoSlideshowRequest request, FFmpegFrameRecorder recorder, int fps) throws Exception {
         int totalFrames = request.getDuration() * fps;
-        int zoomFrames = (int) (totalFrames * (2.0 / 3));
-        int staticFrames = totalFrames - zoomFrames;
+        int halfFramesCount = totalFrames/2;
 
         OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
-        List<Double> zoomFactors = computeZoomFactors(zoomFrames);
+        List<Double> zoomFactors = computeZoomFactors(halfFramesCount);
 
         for (Mat mat : request.getImages()) {
-            Frame lastFrame = null;
+            List<Frame> zoomedFrames = new ArrayList<>();
             for (double factor : zoomFactors) {
                 Mat zoomedMat = matEditor.zoom(mat, factor);
-                lastFrame = converter.convert(zoomedMat);
-                recorder.record(lastFrame);
+                zoomedFrames.add(converter.convert(zoomedMat));
             }
-            for (int i = 0; i < staticFrames; i++) {
-                recorder.record(lastFrame);
+            for (Frame frame : zoomedFrames){
+                recorder.record(frame);
+            }
+            for (int i = halfFramesCount-1; i >= 0; i--) {
+                recorder.record(zoomedFrames.get(i));
             }
         }
         logger.info("All frames processed");
     }
 
-    private List<Double> computeZoomFactors(int zoomFrames) {
-        List<Double> zoomFactors = new ArrayList<>(zoomFrames);
+    private List<Double> computeZoomFactors(int halfFramesCount) {
+        List<Double> zoomFactors = new ArrayList<>(halfFramesCount);
         double zoomFactor = 1.0;
-        for (int i = 0; i < zoomFrames; i++) {
+        for (int i = 0; i < halfFramesCount; i++) {
             zoomFactors.add(zoomFactor);
             zoomFactor -= 0.0016;
         }
