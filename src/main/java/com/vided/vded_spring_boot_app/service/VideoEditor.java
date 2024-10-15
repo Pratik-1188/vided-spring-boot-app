@@ -60,7 +60,7 @@ public class VideoEditor {
 
         try {
             // Process video frames
-            int numLoops = videoSlideshowRequest.getDuration() * (fps / 2);
+            int numLoops = videoSlideshowRequest.getDuration() * (fps);
             OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
             Frame frame;
 
@@ -70,8 +70,7 @@ public class VideoEditor {
                     Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
                     frame = converter.convert(zoomedMat);
                     recorder.record(frame);
-                    recorder.record(frame);
-                    zoomFactor -= 0.0015;
+                    zoomFactor -= 0.0016;
                 }
             }
 

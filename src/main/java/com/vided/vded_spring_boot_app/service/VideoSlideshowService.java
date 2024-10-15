@@ -19,7 +19,7 @@ import java.io.OutputStream;
 
 @Service
 public class VideoSlideshowService {
-    private int fps = 30;
+    private int fps = 12;
     
     @Autowired
     private MatEditor matEditor;
