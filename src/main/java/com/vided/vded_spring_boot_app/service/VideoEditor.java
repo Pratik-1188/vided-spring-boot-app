@@ -55,12 +55,12 @@ public class VideoEditor {
         FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, request.getVideoSize().width(), request.getVideoSize().height());
         recorder.setVideoCodec(avcodec.AV_CODEC_ID_VP8);
         recorder.setFormat("webm");
+        recorder.setOption("preset", "ultrafast");
         recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
-        recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
         recorder.setFrameRate(fps);
-        recorder.setVideoBitrate(3000 * 1000);
+        recorder.setVideoBitrate(2000 * 1000);
 
-
+        recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
         recorder.setAudioChannels(2);
         recorder.setSampleRate(44100);
         recorder.setAudioBitrate(192 * 1000);
