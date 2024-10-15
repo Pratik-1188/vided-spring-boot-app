@@ -3,7 +3,6 @@ package com.vided.vded_spring_boot_app.service;
 import com.vided.vded_spring_boot_app.config.OutputPath;
 import com.vided.vded_spring_boot_app.config.ResourcePath;
 import com.vided.vded_spring_boot_app.model.VideoSlideshowRequest;
-import lombok.extern.flogger.Flogger;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
@@ -17,104 +16,101 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class VideoEditor {
+
+    private static final Logger logger = LoggerFactory.getLogger(VideoEditor.class);
+
     @Autowired
     private MatEditor matEditor;
 
     @Autowired
-    OutputPath outputPath;
+    private OutputPath outputPath;
 
     @Autowired
-    ResourcePath resourcePath;
+    private ResourcePath resourcePath;
 
-    private static final Logger logger = LoggerFactory.getLogger(VideoEditor.class);
+    public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest request, int fps) throws Exception {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             FFmpegFrameRecorder recorder = setupRecorder(outputStream, request, fps)) {
 
-    public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest, int fps) throws Exception {
+            processFrames(request, recorder, fps);
+            processAudio(request, recorder);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            recorder.stop();
 
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(
-                outputStream,
-                videoSlideshowRequest.getVideoSize().width(),
-                videoSlideshowRequest.getVideoSize().height()
-        );
+            byte[] videoData = outputStream.toByteArray();
+            return new ResponseEntity<>(videoData, HttpStatus.CREATED);
 
-        // Set up video properties
+        } catch (Exception e) {
+            logger.error("Failed to create slideshow", e);
+            throw e;
+        }
+    }
+
+    private FFmpegFrameRecorder setupRecorder(ByteArrayOutputStream outputStream, VideoSlideshowRequest request, int fps) throws Exception {
+        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, request.getVideoSize().width(), request.getVideoSize().height());
         recorder.setVideoCodec(avcodec.AV_CODEC_ID_VP8);
         recorder.setFormat("webm");
         recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
         recorder.setFrameRate(fps);
         recorder.setVideoBitrate(3000 * 1000);
-
-        // Set up audio properties
         recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
         recorder.setAudioChannels(2);
         recorder.setSampleRate(44100);
         recorder.setAudioBitrate(192 * 1000);
-
         recorder.start();
+        logger.info("Recorder setup complete");
+        return recorder;
+    }
 
-        logger.info("start video processing");
+    private void processFrames(VideoSlideshowRequest request, FFmpegFrameRecorder recorder, int fps) throws Exception {
+        int totalFrames = request.getDuration() * fps;
+        int zoomFrames = (int) (totalFrames * (2.0 / 3));
+        int staticFrames = totalFrames - zoomFrames;
 
-        try {
-            // Process video frames
-            double totalFrames = videoSlideshowRequest.getDuration() * (fps);
-            int zoomFrames = (int) (totalFrames * ((double) 2 /3));
-            int staticFrames = (int) (totalFrames * ((double) 1 /3));
-            OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
-            Frame frame = null;
+        OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
+        List<Double> zoomFactors = computeZoomFactors(zoomFrames);
 
-            for (Mat mat : videoSlideshowRequest.getImages()) {
-                double zoomFactor = 1.000;
-                for (int i = 0; i < zoomFrames; i++) {
-                    Mat zoomedMat = matEditor.zoom(mat, zoomFactor);
-                    frame = converter.convert(zoomedMat);
-                    recorder.record(frame);
-                    zoomFactor -= 0.0016;
-                }
-                for (int i = 0; i < staticFrames; i++) {
-                    recorder.record(frame);
-                }
+        for (Mat mat : request.getImages()) {
+            Frame lastFrame = null;
+            for (double factor : zoomFactors) {
+                Mat zoomedMat = matEditor.zoom(mat, factor);
+                lastFrame = converter.convert(zoomedMat);
+                recorder.record(lastFrame);
             }
+            for (int i = 0; i < staticFrames; i++) {
+                recorder.record(lastFrame);
+            }
+        }
+        logger.info("All frames processed");
+    }
 
-            logger.info("All frames collected");
+    private List<Double> computeZoomFactors(int zoomFrames) {
+        List<Double> zoomFactors = new ArrayList<>(zoomFrames);
+        double zoomFactor = 1.0;
+        for (int i = 0; i < zoomFrames; i++) {
+            zoomFactors.add(zoomFactor);
+            zoomFactor -= 0.0016;
+        }
+        return zoomFactors;
+    }
 
-            // Process audio after all video frames are recorded
-            Path bgMusicRoot = Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath();
-            FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicRoot.resolve(videoSlideshowRequest.getMusic() + ".mp3").toString());
-            double targetTimeInMicroseconds = videoSlideshowRequest.getDuration() * videoSlideshowRequest.getImages().size() * 1_000_000; // Convert target time to microseconds
-
-            logger.info("Grabbed Audio file from disk");
-
-            logger.info("Starting audio processing");
-
+    private void processAudio(VideoSlideshowRequest request, FFmpegFrameRecorder recorder) throws Exception {
+        Path bgMusicPath = Paths.get(resourcePath.getBgMusic().toUri()).resolve(request.getMusic() + ".mp3");
+        try (FFmpegFrameGrabber audioGrabber = new FFmpegFrameGrabber(bgMusicPath.toString())) {
             audioGrabber.start();
+            double targetTime = request.getDuration() * request.getImages().size() * 1_000_000;
+
             Frame audioFrame;
             while ((audioFrame = audioGrabber.grabSamples()) != null) {
-                if (audioGrabber.getTimestamp() > targetTimeInMicroseconds) {
-                    break;
-                }
+                if (audioGrabber.getTimestamp() > targetTime) break;
                 recorder.record(audioFrame);
             }
-            audioGrabber.stop();
-            audioGrabber.release();
-
-            logger.info("All audio samples collected");
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("Audio processed");
         }
-
-        recorder.stop();
-        recorder.release();
-
-        byte[] videoData = outputStream.toByteArray();
-
-        logger.info("Returning bytes");
-
-        return new ResponseEntity<>(videoData, HttpStatus.CREATED);
     }
 }
