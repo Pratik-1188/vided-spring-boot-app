@@ -3,9 +3,7 @@ package com.vided.vded_spring_boot_app.service;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.Rect;
-import org.bytedeco.opencv.opencv_core.Scalar;
 import org.bytedeco.opencv.opencv_core.Size;
-import org.opencv.core.CvType;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,22 +37,6 @@ public class MatEditor {
         return  result;
     }
 
-    public Mat addTransparentPadding(Mat alphaMat, Size finalSize) {
-        // Calculate padding to center the image
-        int paddingX = (finalSize.width() - alphaMat.cols()) / 2;
-        int paddingY = (finalSize.height() - alphaMat.rows()) / 2;
-
-        // Create a new Mat with the final size, filled with transparency (4 channels, BGRA)
-        Mat paddedMat = new Mat(finalSize.height(), finalSize.width(), CvType.CV_8UC4, new Scalar(255, 255, 255, 0));
-
-        // Copy the original image to the center of the new padded Mat
-        Mat roi = paddedMat.apply(new org.bytedeco.opencv.opencv_core.Rect(paddingX, paddingY, alphaMat.cols(), alphaMat.rows()));
-        alphaMat.copyTo(roi);
-
-        return paddedMat;
-    }
-
-
     public Mat zoom(Mat mat, double zoomFactor){
         if(zoomFactor == 1){
             return mat;
@@ -71,25 +53,18 @@ public class MatEditor {
         return new Mat(mat, roi);
     }
 
-//    OLD ZOOMING LOGIC
-//    public Mat zoom(Mat mat, double zoomFactor){
-//        if(zoomFactor == 1){
-//            return mat;
-//        }
+//    public Mat addTransparentPadding(Mat alphaMat, Size finalSize) {
+//        // Calculate padding to center the image
+//        int paddingX = (finalSize.width() - alphaMat.cols()) / 2;
+//        int paddingY = (finalSize.height() - alphaMat.rows()) / 2;
 //
-//        // calculate new size
-//        int newWidth = (int) (mat.cols() * zoomFactor);
-//        int newHeight = (int) (mat.rows() * zoomFactor);
+//        // Create a new Mat with the final size, filled with transparency (4 channels, BGRA)
+//        Mat paddedMat = new Mat(finalSize.height(), finalSize.width(), CvType.CV_8UC4, new Scalar(255, 255, 255, 0));
 //
-//        // scale up the image
-//        Mat zoomedMat = new Mat();
-//        opencv_imgproc.resize(mat, zoomedMat, new Size(newWidth, newHeight));
+//        // Copy the original image to the center of the new padded Mat
+//        Mat roi = paddedMat.apply(new org.bytedeco.opencv.opencv_core.Rect(paddingX, paddingY, alphaMat.cols(), alphaMat.rows()));
+//        alphaMat.copyTo(roi);
 //
-//        // crop original size from center of image to give zooming effect
-//        int x = (newWidth - mat.cols()) / 2;
-//        int y = (newHeight - mat.rows()) / 2;
-//        Rect roi = new Rect(x, y, mat.cols(), mat.rows());
-//
-//        return new Mat(zoomedMat, roi);
+//        return paddedMat;
 //    }
 }
