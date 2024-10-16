@@ -37,7 +37,7 @@ public class VideoSlideshowRequest {
             this.images.add(mat);  // Add each Mat object to the list
         }
         this.orientation = "Portrait";
-        this.videoSize = new Size(1080, 1920);
+        this.videoSize = new Size(720, 1280);
     }
 
     public String getRandomBgMusic(ResourcePath resourcePath) {
