@@ -21,11 +21,11 @@ public class VideoSlideshowService {
     private OutputPath outputPath;
 
     public ResponseEntity<byte[]> createSlideshow(VideoSlideshowRequest videoSlideshowRequest) throws Exception {
-        for (int i = 0; i < videoSlideshowRequest.getImages().size(); i++) {
-            Mat mat = videoSlideshowRequest.getImages().get(i);
-            mat = matEditor.scaleToFit(mat, videoSlideshowRequest.getOrientation(), videoSlideshowRequest.getVideoSize());
-            videoSlideshowRequest.getImages().set(i, mat);
-        }
+//        for (int i = 0; i < videoSlideshowRequest.getImages().size(); i++) {
+//            Mat mat = videoSlideshowRequest.getImages().get(i);
+//            mat = matEditor.scaleToFit(mat, videoSlideshowRequest.getOrientation(), videoSlideshowRequest.getVideoSize());
+//            videoSlideshowRequest.getImages().set(i, mat);
+//        }
         return videoEditor.createSlideshow(videoSlideshowRequest, fps);
     }
 }
