@@ -1,0 +1,48 @@
+name: Trigger auto deployment for vided-react-app
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/vided-react-app-AutoDeployTrigger-dcdba6b4-315f-48da-938b-5842ab764802.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.VIDEDREACTAPP_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.VIDEDREACTAPP_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.VIDEDREACTAPP_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: 
+          registryUsername: ${{ secrets.VIDEDREACTAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.VIDEDREACTAPP_REGISTRY_PASSWORD }}
+          containerAppName: vided-react-app
+          resourceGroup: vided
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
