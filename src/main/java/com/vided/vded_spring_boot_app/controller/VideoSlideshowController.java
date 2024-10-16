@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/videoslideshow")
-@CrossOrigin("http://localhost:5173/")
+@CrossOrigin("http://localhost:5173")
 public class VideoSlideshowController {
     @Autowired
     private VideoSlideshowService videoSlideshowService;
