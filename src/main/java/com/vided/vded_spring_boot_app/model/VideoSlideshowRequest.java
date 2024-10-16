@@ -41,31 +41,8 @@ public class VideoSlideshowRequest {
     }
 
     public String getRandomBgMusic(ResourcePath resourcePath) {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(resourcePath.getBgMusic().toUri()).toAbsolutePath())) {
             Random random = new Random();
-            Path selectedFile = null;
-            int count = 0;
-
-            for (Path path : stream) {
-                count++;
-                if (random.nextInt(count) == 0) {
-                    selectedFile = path;
-                }
-            }
-
-            if (selectedFile != null) {
-                String fileName = selectedFile.getFileName().toString();
-                return fileName.contains(".")
-                        ? fileName.substring(0, fileName.lastIndexOf('.'))
-                        : fileName;
-            } else {
-                System.out.println("No files found in the directory.");
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
+            int randomNumber = random.nextInt(6) + 1;
+            return (String.valueOf(randomNumber));
     }
 }
