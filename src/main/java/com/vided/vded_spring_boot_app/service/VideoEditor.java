@@ -58,7 +58,7 @@ public class VideoEditor {
         recorder.setOption("preset", "ultrafast");
         recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
         recorder.setFrameRate(fps);
-        recorder.setVideoBitrate(2000 * 1000);
+        recorder.setVideoBitrate(2500 * 1000);
 
         recorder.setAudioCodec(avcodec.AV_CODEC_ID_VORBIS);
         recorder.setAudioChannels(2);
@@ -97,7 +97,7 @@ public class VideoEditor {
         double zoomFactor = 1.0;
         for (int i = 0; i < halfFramesCount; i++) {
             zoomFactors.add(zoomFactor);
-            zoomFactor -= 0.0016;
+            zoomFactor -= 0.0015;
         }
         return zoomFactors;
     }
