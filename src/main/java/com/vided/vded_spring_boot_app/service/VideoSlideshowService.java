@@ -9,14 +9,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class VideoSlideshowService {
-    private int fps = 10;
-    
+    private final int fps = 10;
+
     @Autowired
     private MatEditor matEditor;
 
     @Autowired
     private VideoEditor videoEditor;
-    
+
     @Autowired
     private OutputPath outputPath;
 
